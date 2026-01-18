@@ -1,6 +1,6 @@
 # Projet sémantiques avancées - Sémantique des figures géométriques
 
-Projet Sémantiques Avancées - M2 SIF
+Projet de sémantiques avancées - M2 SIF
 
 Un interpréteur de langage dédié à la géométrie computationnelle, écrit en Skel. Le projet implémente des opérations géométriques sur des points, segments et polygones.
 
