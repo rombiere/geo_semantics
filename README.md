@@ -23,10 +23,12 @@ dune exe geo_semantics
 
 ## ✨ Fonctionnalités
 
-### Types géométriques supportés
+### Types géométriques
+- **Empty** : figure vide
 - **Point** : coordonnées (x, y)
 - **Segment** : paire de points
-- **Polygon** : polygone avec ring extérieur et trous optionnels
+- **Polygon** : contour (collection de points) et trous optionnels (collection de contours)
+- **Figure** : Empty | Point | Segment | Polygon
 - **Geometry** : collection de figures géométriques
 
 ### Opérations implémentées
