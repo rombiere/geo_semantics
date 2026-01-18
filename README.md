@@ -1,4 +1,4 @@
-# Projet Sémantiques Avancées - Sémantique des figures géométriques
+# Projet sémantiques avancées - Sémantique des figures géométriques
 
 Projet de M2 SIF - ASM (Analyse Sémantique et Modèles)
 
