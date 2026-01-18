@@ -16,6 +16,7 @@ Une bibliothèque d'opérations géométriques élémentaires a d'abord dû êtr
 ```bash
 git clone https://github.com/rombiere/semantics_of_geometrical_figures.git 
 cd semantics_of_geometrical_figures
+opam install camlgpc
 dune build
 dune exe semantics_of_geometrical_figures
 ```
