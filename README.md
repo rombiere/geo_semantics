@@ -11,6 +11,15 @@ Une bibliothèque d'opérations géométriques élémentaires a d'abord dû êtr
 - Intersection segment-polygone
 - Opérations sur polygones (intersection, union, différence)
 
+## 🚀 Lancement rapide
+
+```bash
+git clone https://github.com/rombiere/semantics_of_geometrical_figures.git 
+cd semantics_of_geometrical_figures
+dune build
+dune exe semantics_of_geometrical_figures
+```
+
 ## ✨ Fonctionnalités
 
 ### Types géométriques supportés
