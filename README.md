@@ -4,12 +4,15 @@ Projet de sémantiques avancées - M2 SIF
 
 Un interpréteur de langage dédié à la géométrie computationnelle, écrit en Skel. Le projet implémente des opérations géométriques sur des points, segments et polygones.
 
-Une bibliothèque d'opérations géométriques élémentaires a d'abord dû être écrite en OCaml. Ces opérations incluent :
-- Égalité de points, segments, polygones
-- Test d'inclusion de points dans segments et polygones
-- Intersection segment-segment
-- Intersection segment-polygone
-- Opérations sur polygones (intersection, union, différence)
+En l’absence d’une bibliothèque publique offrant ces fonctionnalités, une bibliothèque d’opérations géométriques élémentaires a dû être développée en OCaml, en s’appuyant sur une bibliothèque dédiée au calcul d’intersections (camlgcp).
+
+Cette bibliothèque implémente notamment les opérations suivantes :
+
+- Test d’égalité entre points, segments et polygones  
+- Tests d’appartenance de points à des segments ou à des polygones  
+- Calcul de l’intersection entre deux segments  
+- Calcul de l’intersection entre un segment et un polygone  
+- Opérations booléennes sur les polygones : intersection, union et différence
 
 ## 🚀 Lancement rapide
 

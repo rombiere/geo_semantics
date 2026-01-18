@@ -4,7 +4,6 @@ module FigureUtils = struct
   type point = float * float
   type segment = point * point
   type ring = point list
-  (* Un polygone a un ring extérieur et une liste de rings intérieurs (trous) *)
   type polygon = { outer: ring; holes: ring list }
 
   let eq_point (pt1: point) (pt2: point) : bool =
@@ -17,7 +16,6 @@ module FigureUtils = struct
     let (a2,b2) = seg2 in
     (eq_point a1 a2 && eq_point b1 b2) || (eq_point a1 b2 && eq_point b1 a2)
 
-  (* Convert to/from GPC format *)
   let ring_to_gpc_contour (r: ring) : int * Clip.gpc_vertex array =
     let n = List.length r in
     let vertices = Array.make n { Clip.x = 0.0; Clip.y = 0.0 } in
@@ -26,7 +24,6 @@ module FigureUtils = struct
     ) r;
     (n, vertices)
 
-  (* Normalize ring to CCW before we use it for GPC *)
   let normalize_ccw_early (pts: ring) : ring =
     let n = List.length pts in
     if n < 3 then pts else
@@ -41,9 +38,7 @@ module FigureUtils = struct
     if area < 0. then List.rev pts else pts
 
   let polygon_to_gpc (poly: polygon) : Clip.gpc_polygon =
-    (* Normalize: outer ring should be CCW, holes should be CW *)
     let outer_ccw = normalize_ccw_early poly.outer in
-    (* For holes, we want CW (opposite of CCW), so if area > 0, reverse *)
     let normalize_cw (pts: ring) : ring =
       let n = List.length pts in
       if n < 3 then pts else
@@ -64,7 +59,6 @@ module FigureUtils = struct
     let all_contours = outer_contour :: hole_contours in
     let ncontours = List.length all_contours in
     let hole_flags = Array.make ncontours 0 in
-    (* Mark holes with flag 1 *)
     for i = 1 to ncontours - 1 do
       hole_flags.(i) <- 1
     done;
@@ -73,7 +67,6 @@ module FigureUtils = struct
   let gpc_to_polygons (gpc_poly: Clip.gpc_polygon) : polygon list =
     let (ncontours, hole_flags, contours) = gpc_poly in
     
-    (* Group contours by outer rings and their holes *)
     let outer_rings = ref [] in
     let holes = ref [] in
     
@@ -91,13 +84,10 @@ module FigureUtils = struct
         holes := ring :: !holes
     done;
     
-    (* Assign holes to their containing outer rings using point-in-polygon test *)
     let outer_list = List.rev !outer_rings in
     let holes_list = List.rev !holes in
     
-    (* Helper: check if hole is inside an outer ring *)
     let hole_in_outer hole outer =
-      (* Test with first point of hole *)
       if List.length hole = 0 then false
       else
         let test_pt = List.hd hole in
@@ -118,13 +108,11 @@ module FigureUtils = struct
         loop 0 (n - 1) false
     in
     
-    (* For each outer ring, find its holes *)
     List.map (fun outer ->
       let my_holes = List.filter (fun hole -> hole_in_outer hole outer) holes_list in
       { outer; holes = my_holes }
     ) outer_list
 
-  (* Normalize ring to canonical form *)
   let min_point_index (pts: ring) =
     List.mapi (fun i pt -> (i,pt)) pts
     |> List.fold_left (fun (idx_min, pt_min) (i,pt) ->
@@ -166,7 +154,6 @@ module FigureUtils = struct
       | _, _ -> false
     in
     (aux pts1 pts2 || aux pts1 rev_pts2) ||
-    (* Also check if pts2 reversed and rotated matches *)
     let rev_pts2_rotated = rotate_to_min (List.rev pts2) in
     aux pts1 rev_pts2_rotated
 
@@ -220,10 +207,8 @@ module FigureUtils = struct
         loop 0 (n - 1) false
 
   let poly_contains_pt (pt: point) (poly: polygon) : bool =
-    (* Le point doit être dans le ring extérieur *)
     if not (ring_contains_pt pt poly.outer) then false
     else
-      (* Et ne doit être dans aucun trou *)
       not (List.exists (fun hole -> ring_contains_pt pt hole) poly.holes)
   
   (* Segment ∩ Segment → point *)
@@ -282,10 +267,8 @@ module FigureUtils = struct
     let a, b = seg in
     let acc = ref [] in
     
-    (* Intersections avec le ring extérieur *)
     acc := candidate_points_on_segment_ring seg poly.outer @ !acc;
     
-    (* Intersections avec les trous *)
     List.iter (fun hole ->
       acc := candidate_points_on_segment_ring seg hole @ !acc
     ) poly.holes;
@@ -331,20 +314,16 @@ module FigureUtils = struct
   let seg_contains_pt (seg : segment) (pt : point) : bool =
     let (x1, y1), (x2, y2) = seg in
     let (x, y) = pt in
-    (* Check if point is collinear with segment *)
     let cross = (y -. y1) *. (x2 -. x1) -. (x -. x1) *. (y2 -. y1) in
     if abs_float cross > eps then false
     else
-      (* Check if point is within segment bounds *)
       x >= min x1 x2 -. eps && x <= max x1 x2 +. eps &&
       y >= min y1 y2 -. eps && y <= max y1 y2 +. eps
 
   (* Segment ⊆ Polygon → bool *)
   let poly_contains_seg (poly : polygon) (seg : segment) : bool =
     let (p1, p2) = seg in
-    (* Both endpoints must be in or on the polygon *)
     poly_contains_pt p1 poly && poly_contains_pt p2 poly &&
-    (* And the entire segment must be inside *)
     let candidates = candidate_points_on_segment seg poly in
     match candidates with
     | [] -> false
@@ -382,15 +361,12 @@ module FigureUtils = struct
     let (x1, y1), (x2, y2) = seg1 in
     let (sx1, sy1), (sx2, sy2) = seg2 in
     
-    (* Vérifier si les segments sont collinéaires *)
     let cross1 = (sx1 -. x1) *. (y2 -. y1) -. (sy1 -. y1) *. (x2 -. x1) in
     let cross2 = (sx2 -. x1) *. (y2 -. y1) -. (sy2 -. y1) *. (x2 -. x1) in
     
     if abs_float cross1 > eps || abs_float cross2 > eps then
-      (* Pas collinéaires: retourner le segment original *)
       [seg1]
     else
-      (* Collinéaires: trouver les portions de seg1 qui ne sont pas dans seg2 *)
       let param_t pt =
         let (px, py) = pt in
         if abs_float (x2 -. x1) >= abs_float (y2 -. y1) then
@@ -407,10 +383,8 @@ module FigureUtils = struct
       let t2_min = min t2_start t2_end in
       let t2_max = max t2_start t2_end in
       
-      (* Calculer les segments de différence *)
       let result = ref [] in
       
-      (* Portion avant l'intersection *)
       (if t1_start < t2_min -. eps then
         let pt_start = (x1 +. t1_start *. (x2 -. x1), y1 +. t1_start *. (y2 -. y1)) in
         let pt_end = (x1 +. min (t2_min -. eps) t1_end *. (x2 -. x1), y1 +. min (t2_min -. eps) t1_end *. (y2 -. y1)) in
@@ -418,7 +392,6 @@ module FigureUtils = struct
           result := (pt_start, pt_end) :: !result
       );
       
-      (* Portion après l'intersection *)
       (if t1_end > t2_max +. eps then
         let pt_start = (x1 +. max (t2_max +. eps) t1_start *. (x2 -. x1), y1 +. max (t2_max +. eps) t1_start *. (y2 -. y1)) in
         let pt_end = (x1 +. t1_end *. (x2 -. x1), y1 +. t1_end *. (y2 -. y1)) in
@@ -433,15 +406,12 @@ module FigureUtils = struct
     let (x1, y1), (x2, y2) = seg1 in
     let (sx1, sy1), (sx2, sy2) = seg2 in
     
-    (* Vérifier si les segments sont collinéaires *)
     let cross1 = (sx1 -. x1) *. (y2 -. y1) -. (sy1 -. y1) *. (x2 -. x1) in
     let cross2 = (sx2 -. x1) *. (y2 -. y1) -. (sy2 -. y1) *. (x2 -. x1) in
     
     if abs_float cross1 > eps || abs_float cross2 > eps then
-      (* Pas collinéaires: retourner les deux segments *)
       [seg1; seg2]
     else
-      (* Collinéaires: fusionner si possible *)
       let param_t pt =
         let (px, py) = pt in
         if abs_float (x2 -. x1) >= abs_float (y2 -. y1) then
