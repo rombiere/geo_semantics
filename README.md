@@ -157,7 +157,7 @@ Résultat attendu: False
 geo_semantics/
 ├── README.md                 # Ce fichier
 ├── dune-project              # Configuration Dune
-├── geo_semantics.opam           # Fichier de dépendances Opam
+├── geo_semantics.opam        # Fichier de dépendances Opam
 │
 ├── bin/                      
 │   ├── dune                  # Configuration de build
