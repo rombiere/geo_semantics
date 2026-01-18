@@ -1,0 +1,23 @@
+# Dune build outputs
+/_build/
+/install/
+*.install
+
+# Editor/OS files
+.DS_Store
+.vscode/
+.idea/
+
+# OCaml build artifacts
+*.cma
+*.cmi
+*.cmo
+*.cmx
+*.cmxa
+*.cmxs
+*.a
+*.o
+
+# Tests and logs
+/_build/**/_tests/
+/_build/**/log/

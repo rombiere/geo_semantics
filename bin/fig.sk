@@ -1,0 +1,377 @@
+type point
+type segment
+type polygon
+
+type figure = 
+    | Point point
+    | Segment segment
+    | Polygon polygon
+    | Empty
+
+type geometry = 
+    | Nil
+    | Cons (figure, geometry)
+
+type bool = TT | FF
+
+type ident
+
+type env<_>
+val in_env<a> : (env<a>, ident) -> bool
+val get_env<a> : (env<a>, ident) -> a
+val set_env<a> : (env<a>, ident, a) -> env<a>
+
+type value = 
+    | VBool bool 
+    | VGeometry geometry
+
+val empty_venv : env<value>
+
+type term =
+    | Bool bool
+    | Geometry geometry
+    | Var ident
+    | LetIn (ident, term, term)
+    | Eq (term, term)
+    | Intersects (term, term)
+    | Includes (term, term)
+    | IsEmpty (term)
+    | Intersection (term, term)
+    | Union (term, term)
+    | Difference (term, term)
+    | SymmetricDifference (term, term)
+
+(* Equality operations *)
+val eq_point : (point, point) -> bool
+val eq_segment : (segment, segment) -> bool
+val eq_polygon : (polygon, polygon) -> bool
+
+val eq_figure ((fig1: figure), (fig2: figure)) : bool =
+    match (fig1, fig2) with
+    | (Point pt1, Point pt2) -> eq_point (pt1, pt2)
+    | (Segment seg1, Segment seg2) -> eq_segment (seg1, seg2)
+    | (Polygon poly1, Polygon poly2) -> eq_polygon (poly1, poly2)
+    | _ -> FF
+    end
+
+(* Intersection operations *)
+val seg_seg_inter : (segment, segment) -> figure
+val seg_poly_inter : (segment, polygon) -> geometry
+val poly_poly_inter : (polygon, polygon) -> geometry
+
+val fig_fig_inter ((fig1: figure), (fig2: figure)) : geometry =
+    match (fig1, fig2) with
+    | (Point pt1, Point pt2) -> 
+        match eq_point (pt1, pt2) with
+        | TT -> Cons (fig1, Nil)
+        | FF -> Nil
+        end
+    | (Point pt1, Segment s2) ->
+        match seg_includes_pt (s2, pt1) with
+        | TT -> Cons (fig1, Nil)
+        | FF -> Nil
+        end
+    | (Segment _, Point _) -> fig_fig_inter (fig2, fig1)
+    | (Segment s1, Segment s2) ->
+        let inter = seg_seg_inter (s1, s2) in
+        Cons (inter, Nil)
+    | (Point pt1, Polygon poly2) ->
+        match poly_includes_pt (poly2, pt1) with
+        | TT -> Cons (fig1, Nil)
+        | FF -> Nil
+        end
+    | (Polygon _, Point _) -> fig_fig_inter (fig2, fig1)
+    | (Segment s1, Polygon poly2) ->
+        let inter = seg_poly_inter (s1, poly2) in
+        inter
+    | (Polygon _, Segment _) -> fig_fig_inter (fig2, fig1)
+    | (Polygon poly1, Polygon poly2) -> poly_poly_inter (poly1, poly2)
+    | _ -> Nil
+    end
+
+val fig_geo_inter ((fig: figure), (geo: geometry)) : geometry =
+    match geo with
+    | Nil -> Nil
+    | Cons (fig2, rest) ->
+        let inter_fig = fig_fig_inter (fig, fig2) in
+        match inter_fig with
+        | Nil -> fig_geo_inter (fig, rest)
+        | _ -> 
+            let rest_geo = fig_geo_inter (fig, rest) in
+            let inter = chain_geometries (inter_fig, rest_geo) in
+            inter
+        end
+    end
+
+(* Inclusion operations *)
+val seg_includes_pt : (segment, point) -> bool
+val poly_includes_pt : (polygon, point) -> bool
+val poly_includes_seg : (polygon, segment) -> bool
+
+val fig_includes_fig ((outer: figure), (inner: figure)) : bool =
+    match (outer, inner) with
+    | (Point pt_outer, Point pt_inner) -> eq_point (pt_outer, pt_inner)
+    | (Segment seg_outer, Point pt_inner) -> seg_includes_pt (seg_outer, pt_inner)
+    | (Polygon poly_outer, Point pt_inner) -> poly_includes_pt (poly_outer, pt_inner)
+    | (Polygon poly_outer, Segment seg_inner) -> poly_includes_seg (poly_outer, seg_inner)
+    | (Segment seg_outer, Segment seg_inner) -> eq_segment (seg_outer, seg_inner)
+    | (Polygon poly_outer, Polygon poly_inner) ->
+        let inter = poly_poly_inter (poly_outer, poly_inner) in
+        match inter with
+        | Cons (Polygon poly_inter, Nil) -> eq_polygon (poly_inter, poly_inner)
+        | _ -> FF
+        end
+    | _ -> FF
+    end
+
+val geo_includes_fig ((inner: figure), (outer: geometry)) : bool =
+    match outer with
+    | Nil -> FF
+    | Cons (fig_outer, rest_outer) ->
+        match fig_includes_fig (fig_outer, inner) with
+        | TT -> TT
+        | FF -> geo_includes_fig (inner, rest_outer)
+        end
+    end
+
+val poly_includes_poly ((outer: polygon), (inner: polygon)) : bool =
+    let inter = poly_poly_inter (outer, inner) in
+    match inter with
+    | Cons (Polygon poly_inter, Nil) ->
+        let res = eq_polygon (poly_inter, inner) in
+        res
+    | _ -> FF
+    end
+    
+(* Union operations *)
+val seg_union_seg : (segment, segment) -> geometry
+val poly_union_poly : (polygon, polygon) -> geometry
+
+val chain_geometries ((geo1: geometry), (geo2: geometry)) : geometry =
+    match geo1 with
+    | Nil -> geo2
+    | Cons (fig, rest) ->
+        let rest = chain_geometries (rest, geo2) in
+        Cons (fig, rest)
+    end
+
+val poly_union_geo ((poly: polygon), (geo: geometry)) : geometry =
+    match geo with
+    | Nil -> Cons (Polygon poly, Nil)
+    | Cons (fig, rest) ->
+        match fig with
+        | Polygon poly2 ->
+            let union_geo = poly_union_poly (poly, poly2) in
+            chain_geometries (union_geo, rest)
+        | Empty -> poly_union_geo (poly, rest)
+        | _ ->
+            let rest_union = poly_union_geo (poly, rest) in
+            Cons (fig, rest_union)
+        end
+    end
+
+val seg_union_geo ((seg: segment), (geo: geometry)) : geometry =
+    match geo with
+    | Nil -> Cons (Segment seg, Nil)
+    | Cons (fig, rest) ->
+        match fig with
+        | Segment seg2 ->
+            let union_geo = seg_union_seg (seg, seg2) in
+            chain_geometries (union_geo, rest)
+        | Empty -> seg_union_geo (seg, rest)
+        | _ ->
+            let rest_union = seg_union_geo (seg, rest) in
+            Cons (fig, rest_union)
+        end
+    end
+
+val collapse_geometry (geo: geometry) : geometry =
+    match geo with
+    | Nil -> Nil
+    | Cons (fig, rest) ->
+        match fig with
+        | Polygon poly ->
+            let rest_collapsed = collapse_geometry rest in
+            let union_geo = poly_union_geo (poly, rest_collapsed) in
+            union_geo
+        | Segment seg ->
+            let rest_collapsed = collapse_geometry rest in
+            let union_geo = seg_union_geo (seg, rest_collapsed) in
+            union_geo
+        | Empty -> collapse_geometry rest
+        | _ ->
+            let rest_collapsed = collapse_geometry rest in
+            Cons (fig, rest_collapsed)
+        end
+    end  
+
+(* Difference operations *)
+val seg_difference : (segment, segment) -> geometry
+val polygon_difference : (polygon, polygon) -> geometry
+
+val fig_fig_diff ((fig1: figure), (fig2: figure)) : geometry =
+    match (fig1, fig2) with
+    | (Polygon poly1, Polygon poly2) -> polygon_difference (poly1, poly2)
+    | (Segment seg1, Segment seg2) -> seg_difference (seg1, seg2)
+    | (Point pt1, Point pt2) ->
+        match eq_point (pt1, pt2) with
+        | TT -> Nil
+        | FF -> Cons (fig1, Nil)
+        end
+    | _ -> Cons (fig1, Nil)
+    end
+
+val geo_fig_diff ((fig: figure), (geo: geometry)) : geometry =
+    match geo with
+    | Nil -> Nil
+    | Cons (fig2, rest) ->
+        let diff_fig = fig_fig_diff (fig, fig2) in
+        match diff_fig with
+        | Nil -> geo_fig_diff (fig, rest)
+        | _ ->
+            let rest_diff = geo_fig_diff (fig, rest) in
+            let diff = chain_geometries (diff_fig, rest_diff) in
+            diff
+        end
+    end
+
+(* Evaluation helpers *)
+val expect_geometry (v: value) : geometry =
+    match v with
+    | VGeometry geo -> geo
+    | VBool _ -> Nil
+    end
+
+val expect_bool (v: value) : bool =
+    match v with
+    | VBool b -> b
+    | VGeometry _ -> FF
+    end
+
+val eval_intersection ((geo1: geometry), (geo2: geometry)) : geometry =
+    match geo1 with
+    | Nil -> Nil
+    | Cons (fig1, rest1) ->
+        let inter_geo = fig_geo_inter (fig1, geo2) in
+        let rest_inter = eval_intersection (rest1, geo2) in
+        chain_geometries (inter_geo, rest_inter)
+    end
+
+val eval_union ((geo1: geometry), (geo2: geometry)) : geometry =
+    let chained_geometry = chain_geometries (geo1, geo2) in
+    let collapsed_geometry = collapse_geometry chained_geometry in
+    collapsed_geometry
+
+val eval_difference ((geo1: geometry), (geo2: geometry)) : geometry =
+    match geo1 with
+    | Nil -> Nil
+    | Cons (fig1, rest1) ->
+        let diff_geo = geo_fig_diff (fig1, geo2) in
+        let rest_diff = eval_difference (rest1, geo2) in
+        chain_geometries (diff_geo, rest_diff)
+    end
+
+val eval_symmetric_difference ((geo1: geometry), (geo2: geometry)) : geometry =
+    let diff1 = eval_difference (geo1, geo2) in
+    let diff2 = eval_difference (geo2, geo1) in
+    let sym_diff = eval_union (diff1, diff2) in
+    sym_diff
+
+val eval_includes ((outer: geometry), (inner: geometry)) : bool =
+    let collapsed_outer = collapse_geometry outer in
+    match inner with
+    | Nil -> TT
+    | Cons (fig_inner, rest_inner) ->
+        match geo_includes_fig (fig_inner, collapsed_outer) with
+        | TT -> eval_includes (collapsed_outer, rest_inner)
+        | FF -> FF
+        end
+    end
+
+val eval_eq ((geo1: geometry), (geo2: geometry)) : bool =
+    match eval_includes (geo1, geo2) with
+    | TT -> eval_includes (geo2, geo1)
+    | FF -> FF
+    end
+
+val eval_intersects ((geo1: geometry), (geo2: geometry)) : bool =
+    let inter = eval_intersection (geo1, geo2) in
+    match inter with
+    | Nil -> FF
+    | _ -> TT
+    end
+
+val eval_is_empty (geo: geometry) : bool =
+    match geo with
+    | Nil -> TT
+    | _ -> FF
+    end
+
+(* Main evaluation function *)
+val eval ((env: env<value>), (t: term)) : value =
+    match t with
+    | Bool b -> VBool b
+    | Geometry g -> VGeometry g
+    | Var x -> get_env<value> (env, x)
+    | LetIn (x, t1, t2) ->
+        let v1 = eval (env, t1) in
+        let env' = set_env<value> (env, x, v1) in
+        eval (env', t2)
+    | Eq (t1, t2) ->
+        let v1 = eval (env, t1) in
+        let v2 = eval (env, t2) in
+        let g1 = expect_geometry (v1) in
+        let g2 = expect_geometry (v2) in
+        let b = eval_eq (g1, g2) in
+        VBool b
+    | Intersects (t1, t2) ->
+        let v1 = eval (env, t1) in
+        let v2 = eval (env, t2) in
+        let g1 = expect_geometry (v1) in
+        let g2 = expect_geometry (v2) in
+        let b = eval_intersects (g1, g2) in
+        VBool b
+    | Includes (t_outer, t_inner) ->
+        let v_outer = eval (env, t_outer) in
+        let v_inner = eval (env, t_inner) in
+        let g_outer = expect_geometry (v_outer) in
+        let g_inner = expect_geometry (v_inner) in
+        let b = eval_includes (g_outer, g_inner) in
+        VBool b
+    | IsEmpty t_geo ->
+        let v = eval (env, t_geo) in
+        let g = expect_geometry (v) in
+        let b = eval_is_empty (g) in
+        VBool b
+    | Intersection (t1, t2) ->
+        let v1 = eval (env, t1) in
+        let v2 = eval (env, t2) in
+        let g1 = expect_geometry (v1) in
+        let g2 = expect_geometry (v2) in
+        let geo = eval_intersection (g1, g2) in
+        VGeometry geo
+    | Union (t1, t2) ->
+        let v1 = eval (env, t1) in
+        let v2 = eval (env, t2) in
+        let g1 = expect_geometry (v1) in
+        let g2 = expect_geometry (v2) in
+        let geo = eval_union (g1, g2) in
+        VGeometry geo
+    | Difference (t1, t2) ->
+        let v1 = eval (env, t1) in
+        let v2 = eval (env, t2) in
+        let g1 = expect_geometry (v1) in
+        let g2 = expect_geometry (v2) in
+        let geo = eval_difference (g1, g2) in
+        VGeometry geo
+    | SymmetricDifference (t1, t2) ->
+        let v1 = eval (env, t1) in
+        let v2 = eval (env, t2) in
+        let g1 = expect_geometry (v1) in
+        let g2 = expect_geometry (v2) in
+        let geo = eval_symmetric_difference (g1, g2) in
+        VGeometry geo
+    end
+
+val run_eval (t: term) : value =
+    eval (empty_venv, t)

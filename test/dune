@@ -1,0 +1,6 @@
+(test
+    (name test_semantics_of_geometrical_figures)
+    (libraries necroml alcotest camlgpc semantics_of_geometrical_figures))
+
+(env
+    (dev (flags (:standard -w -8))))

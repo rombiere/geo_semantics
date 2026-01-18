@@ -1,0 +1,5 @@
+(library
+ (name semantics_of_geometrical_figures)
+ (public_name semantics_of_geometrical_figures)
+ (libraries camlgpc)
+ (modules figure_utils))
