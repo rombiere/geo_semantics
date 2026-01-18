@@ -146,7 +146,10 @@ let test_associativity_union () =
   let a_geo = Cons (Polygon a, Nil) in
   let b_geo = Cons (Polygon b, Nil) in
   let c_geo = Cons (Polygon c, Nil) in
-  Printf.printf "\n=== Ex2: Associativité : A ∪ (B ∪ C) = (A ∪ B) ∪ C ===\nRésultat du test d'égalité: %s\nRésultat attendu: True\n"
+  Printf.printf "\n=== Ex2: Associativité : A ∪ (B ∪ C) = (A ∪ B) ∪ C ===\nA = %s\nB = %s\nC = %s\nRésultat du test d'égalité: %s\nRésultat attendu: True\n"
+    (string_of_geometry a_geo)
+    (string_of_geometry b_geo)
+    (string_of_geometry c_geo)
     (string_of_value (run_eval (
       LetIn (0, Geometry a_geo,
       LetIn (1, Geometry b_geo,
@@ -162,7 +165,9 @@ let test_union_contains_intersection () =
   let b = Semantics_of_geometrical_figures.Figure_utils.FigureUtils.{ outer = [(1., 1.); (3., 1.); (3., 3.); (1., 3.)]; holes = [] } in
   let a_geo = Cons (Polygon a, Nil) in
   let b_geo = Cons (Polygon b, Nil) in
-  Printf.printf "\n=== Ex3: (A ∪ B) ⊇ (A ∩ B) ===\nRésultat du test d'inclusion: %s\nRésultat attendu: True\n"
+  Printf.printf "\n=== Ex3: (A ∪ B) ⊇ (A ∩ B) ===\nA = %s\nB = %s\nRésultat du test d'inclusion: %s\nRésultat attendu: True\n"
+    (string_of_geometry a_geo)
+    (string_of_geometry b_geo)
     (string_of_value (run_eval (
       LetIn (0, Geometry a_geo,
       LetIn (1, Geometry b_geo,
@@ -177,7 +182,10 @@ let test_distributivity () =
   let a_geo = Cons (Polygon a, Nil) in
   let b_geo = Cons (Polygon b, Nil) in
   let c_geo = Cons (Polygon c, Nil) in
-  Printf.printf "\n=== Ex4: Distributivité : A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C) ===\nRésultat du test d'égalité: %s\nRésultat attendu: True\n"
+  Printf.printf "\n=== Ex4: Distributivité : A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C) ===\nA = %s\nB = %s\nC = %s\nRésultat du test d'égalité: %s\nRésultat attendu: True\n"
+    (string_of_geometry a_geo)
+    (string_of_geometry b_geo)
+    (string_of_geometry c_geo)
     (string_of_value (run_eval (
       LetIn (0, Geometry a_geo,
       LetIn (1, Geometry b_geo,
@@ -194,7 +202,9 @@ let test_symmetric_difference_not_union () =
     let b = Semantics_of_geometrical_figures.Figure_utils.FigureUtils.{ outer = [(1., 1.); (3., 1.); (3., 3.); (1., 3.)]; holes = [] } in
     let a_geo = Cons (Polygon a, Nil) in
     let b_geo = Cons (Polygon b, Nil) in
-    Printf.printf "\n=== Ex5: A ∪ B = A Δ B ===\nRésultat du test d'égalité: %s\nRésultat attendu: False\n"
+    Printf.printf "\n=== Ex5: A ∪ B = A Δ B ===\nA = %s\nB = %s\nRésultat du test d'égalité: %s\nRésultat attendu: False\n"
+      (string_of_geometry a_geo)
+      (string_of_geometry b_geo)
       (string_of_value (run_eval (
         LetIn (0, Geometry a_geo,
         LetIn (1, Geometry b_geo,
@@ -206,7 +216,10 @@ let test_distributivity_of_difference_on_union () =
   let a_geo = Cons (Segment ((0., 0.), (3., 0.)), Nil) in
   let b_geo = Cons (Segment ((0., 0.), (1., 0.)), Nil) in
   let c_geo = Cons (Segment ((2., 0.), (3., 0.)), Nil) in
-  Printf.printf "\n=== Ex6: Distributivité de la différence sur l'union : A \\ (B ∪ C) = (A \\ B) ∪ (A \\ C) ===\nRésultat du test d'égalité: %s\nRésultat attendu: False\n"
+  Printf.printf "\n=== Ex6: Distributivité de la différence sur l'union : A \\ (B ∪ C) = (A \\ B) ∪ (A \\ C) ===\nA = %s\nB = %s\nC = %s\nRésultat du test d'égalité: %s\nRésultat attendu: False\n"
+    (string_of_geometry a_geo)
+    (string_of_geometry b_geo)
+    (string_of_geometry c_geo)
     (string_of_value (run_eval (
       LetIn (0, Geometry a_geo,
       LetIn (1, Geometry b_geo,

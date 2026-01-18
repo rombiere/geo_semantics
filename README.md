@@ -110,22 +110,35 @@ A Δ B = Poly[(4.0,4.0),(4.0,2.0),(6.0,2.0),(6.0,6.0),(2.0,6.0),(2.0,4.0)]; Poly
 A \ B = Poly[(4.0,0.0),(4.0,2.0),(2.0,2.0),(2.0,4.0),(0.0,4.0),(0.0,0.0)]
 
 === Ex2: Associativité : A ∪ (B ∪ C) = (A ∪ B) ∪ C ===
+A = Poly[(0.0,0.0),(2.0,0.0),(2.0,2.0),(0.0,2.0)]
+B = Poly[(1.0,1.0),(3.0,1.0),(3.0,3.0),(1.0,3.0)]
+C = Poly[(2.0,2.0),(4.0,2.0),(4.0,4.0),(2.0,4.0)]
 Résultat du test d'égalité: True
 Résultat attendu: True
 
 === Ex3: (A ∪ B) ⊇ (A ∩ B) ===
+A = Poly[(0.0,0.0),(2.0,0.0),(2.0,2.0),(0.0,2.0)]
+B = Poly[(1.0,1.0),(3.0,1.0),(3.0,3.0),(1.0,3.0)]
 Résultat du test d'inclusion: True
 Résultat attendu: True
 
 === Ex4: Distributivité : A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C) ===
+A = Poly[(0.0,0.0),(2.0,0.0),(2.0,2.0),(0.0,2.0)]
+B = Poly[(1.0,1.0),(3.0,1.0),(3.0,3.0),(1.0,3.0)]
+C = Poly[(2.0,2.0),(4.0,2.0),(4.0,4.0),(2.0,4.0)]
 Résultat du test d'égalité: True
 Résultat attendu: True
 
 === Ex5: A ∪ B = A Δ B ===
+A = Poly[(0.0,0.0),(2.0,0.0),(2.0,2.0),(0.0,2.0)]
+B = Poly[(1.0,1.0),(3.0,1.0),(3.0,3.0),(1.0,3.0)]
 Résultat du test d'égalité: False
 Résultat attendu: False
 
 === Ex6: Distributivité de la différence sur l'union : A \ (B ∪ C) = (A \ B) ∪ (A \ C) ===
+A = Seg[(0.0,0.0)-(3.0,0.0)]
+B = Seg[(0.0,0.0)-(1.0,0.0)]
+C = Seg[(2.0,0.0)-(3.0,0.0)]
 Résultat du test d'égalité: False
 Résultat attendu: False
 
