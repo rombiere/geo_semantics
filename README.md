@@ -1,0 +1,1 @@
+# semantic_of_geometrical_figures
