@@ -1,18 +1,8 @@
 # Projet : Sémantique des figures géométriques
 
-Projet de sémantiques avancées - M2 SIF
-
 Un interpréteur de langage dédié à la géométrie computationnelle, écrit en Skel. Le projet implémente des opérations géométriques sur des points, segments et polygones.
 
-En l’absence d’une bibliothèque publique offrant ces fonctionnalités, une bibliothèque d’opérations géométriques élémentaires a dû être développée en OCaml, en s’appuyant sur une bibliothèque dédiée au calcul d’intersections (camlgcp).
-
-Cette bibliothèque implémente notamment les opérations suivantes :
-
-- Test d’égalité entre points, segments et polygones  
-- Tests d’appartenance de points à des segments ou à des polygones  
-- Calcul de l’intersection entre deux segments  
-- Calcul de l’intersection entre un segment et un polygone  
-- Opérations booléennes sur les polygones : intersection, union et différence
+En l’absence d’une bibliothèque publique offrant ces fonctionnalités, une bibliothèque d’opérations géométriques élémentaires a dû être développée en OCaml, en s’appuyant sur une bibliothèque dédiée au calcul d’intersections de polygones (camlgpc).
 
 ## 🚀 Lancement rapide
 
@@ -24,7 +14,7 @@ dune build
 dune exe geo_semantics
 ```
 
-## ✨ Fonctionnalités
+## Fonctionnalités
 
 ### Types géométriques
 - **Empty** : figure vide
@@ -40,7 +30,7 @@ dune exe geo_semantics
 - **Égalité** (`Eq`) : teste l'égalité entre deux géométries
 - **Intersection** (`Intersects`) : teste si deux géométries s'intersectent
 - **Inclusion** (`Includes`) : teste si une géométrie contient une autre
-- **IsEmpty** : teste si une géométrie est vide
+- **IsEmpty** (`isEmpty`): teste si une géométrie est vide
 
 #### Opérations géométriques
 - **Intersection** (`Intersection`) : calcule l'intersection de deux géométries
@@ -78,7 +68,7 @@ opam install necrolib
 
 ```
 
-## 🚀 Installation et Utilisation
+## Installation et Utilisation
 
 ### Cloner le dépôt
 
@@ -302,12 +292,14 @@ dune test
 
 Deux tests échouent en raison des limitations suivantes :
 
-Les polygones partageant plusieurs arêtes présentent des instabilités dans la bibliothèque GPC lors du calcul des intersections ou unions, provoquant des résultats imprévisibles et des échecs d'assertions dans les tests. Ces instabilités numériques sont des limitations inhérentes de la dépendance de la bibliothèque géométrique utilisée.
+Les polygones partageant plusieurs arêtes, ou dont les arètes et sommets se superposent présentent des instabilités dans la bibliothèque camlgpc lors du calcul des intersections, provoquant des résultats imprévisibles et des échecs d'assertions dans les tests. Ces instabilités numériques sont des limitations inhérentes de la dépendance de la bibliothèque utilisée.
+
+Aucune autre bibliothèque implémentant l'intersection de polygones creux et/ou convexes ne semble être disponible en OCaml.
 
 ## 📚 Références
 
 - [Necroml](https://skeletons.inria.fr/) - Skeletal semantics
-- [camlgcp](https://github.com/johnwhitington/camlgpc) - OCaml interface to Alan Murta's General Polygon Clipper.
+- [camlgpc](https://github.com/johnwhitington/camlgpc) - OCaml interface to Alan Murta's General Polygon Clipper.
 - [Dune](https://dune.readthedocs.io/) - Documentation Dune
 - [Alcotest](https://github.com/mirage/alcotest) - Framework de tests
 
