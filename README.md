@@ -305,5 +305,5 @@ Aucune autre bibliothèque implémentant l'intersection de polygones creux et/ou
 
 ## 👥 Auteur
 
-Projet réalisé par Paul Laurent dans le cadre du cours ASM (Advanced Semantics) du M2 SIF
+Projet réalisé par Paul Laurent dans le cadre du cours ASM (Advanced Semantics) du M2 SIF de l'université de Rennes, enseigné par Alan Schmitt.
 
